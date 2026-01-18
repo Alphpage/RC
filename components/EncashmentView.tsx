@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { RentalPoint, CashRegister, EncashmentEntry, RevenueEntry } from '../types';
-import { HandCoins, History, ChevronDown, ChevronUp, Plus, Calendar, CreditCard, AlertCircle, Check } from 'lucide-react';
+import { Banknote, History, ChevronDown, ChevronUp, Plus, Calendar, CreditCard, AlertCircle } from 'lucide-react';
 
 interface EncashmentViewProps {
   points: RentalPoint[];
@@ -52,13 +52,13 @@ const EncashmentView: React.FC<EncashmentViewProps> = ({ points, registers, entr
   };
 
   return (
-    <div className="space-y-4 pb-20">
+    <div className="space-y-4">
       <div className="flex items-center gap-2 mb-2 px-1">
-        <HandCoins className="text-slate-400" size={18} />
+        <Banknote className="text-slate-400" size={18} />
         <h2 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Контроль наличности</h2>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {points.map(point => {
           const totalCash = calculateCashBalance(point.id);
           const isExpanded = expandedPointId === point.id;
@@ -69,11 +69,11 @@ const EncashmentView: React.FC<EncashmentViewProps> = ({ points, registers, entr
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
           return (
-            <div key={point.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-300">
+            <div key={point.id} className={`bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden transition-all duration-300 h-fit ${isExpanded ? 'row-span-2' : ''}`}>
               {/* Point Plate Header */}
               <div 
                 onClick={() => setExpandedPointId(isExpanded ? null : point.id)}
-                className={`p-5 cursor-pointer flex justify-between items-center transition-colors ${isExpanded ? 'bg-slate-50' : 'hover:bg-slate-50/50'}`}
+                className={`p-4 cursor-pointer flex justify-between items-center transition-colors ${isExpanded ? 'bg-slate-50' : 'hover:bg-slate-50/50'}`}
               >
                 <div className="flex flex-col">
                   <span className="text-sm font-bold text-slate-800">{point.name}</span>
@@ -118,60 +118,41 @@ const EncashmentView: React.FC<EncashmentViewProps> = ({ points, registers, entr
 
                   {/* Add Encashment Form */}
                   {!isReadOnly && (
-                    <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 space-y-4">
+                    <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50 space-y-3">
                       <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest flex items-center gap-1.5">
                         <Plus size={12} /> Новая инкассация
                       </h4>
-                      
-                      {/* Register Chips Selector */}
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Откуда забираем?</p>
-                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                          {pointRegisters.map(r => (
-                            <button
-                              key={r.id}
-                              onClick={() => setNewEncashment({...newEncashment, registerId: r.id})}
-                              className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold transition-all border ${
-                                newEncashment.registerId === r.id 
-                                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-200' 
-                                : 'bg-white text-slate-600 border-slate-200'
-                              }`}
-                            >
-                              {r.name}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="col-span-1">
-                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Дата</p>
-                             <input 
-                              type="date"
-                              value={newEncashment.date}
-                              onChange={(e) => setNewEncashment({...newEncashment, date: e.target.value})}
-                              className="w-full bg-white border border-blue-100 rounded-xl px-2 py-3 text-xs font-bold text-center h-[50px]"
-                            />
-                        </div>
+                      <div className="grid grid-cols-2 gap-2">
                         <div className="col-span-2">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Сумма</p>
-                            <input 
-                              type="number"
-                              inputMode="decimal"
-                              placeholder="0"
-                              value={newEncashment.amount}
-                              onChange={(e) => setNewEncashment({...newEncashment, amount: e.target.value})}
-                              className="w-full bg-white border border-blue-100 rounded-xl px-4 py-3 text-lg font-bold outline-none focus:ring-2 focus:ring-blue-500 h-[50px] placeholder-slate-200"
-                            />
+                          <select 
+                            value={newEncashment.registerId}
+                            onChange={(e) => setNewEncashment({...newEncashment, registerId: e.target.value})}
+                            className="w-full bg-white border border-blue-100 rounded-lg px-3 py-2 text-xs font-bold"
+                          >
+                            <option value="">Выберите кассу</option>
+                            {pointRegisters.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                          </select>
                         </div>
+                        <input 
+                          type="date"
+                          value={newEncashment.date}
+                          onChange={(e) => setNewEncashment({...newEncashment, date: e.target.value})}
+                          className="bg-white border border-blue-100 rounded-lg px-3 py-2 text-xs font-bold"
+                        />
+                        <input 
+                          type="number"
+                          placeholder="Сумма"
+                          value={newEncashment.amount}
+                          onChange={(e) => setNewEncashment({...newEncashment, amount: e.target.value})}
+                          className="bg-white border border-blue-100 rounded-lg px-3 py-2 text-xs font-bold"
+                        />
                       </div>
-
                       <button 
                         onClick={() => handleAddEncashment(point.id)}
                         disabled={!newEncashment.registerId || !newEncashment.amount}
-                        className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-blue-200 active:scale-95 disabled:opacity-50 disabled:shadow-none transition-all flex items-center justify-center gap-2"
+                        className="w-full bg-blue-600 text-white py-2 rounded-xl text-xs font-bold shadow-md shadow-blue-100 active:scale-95 disabled:opacity-30 disabled:shadow-none transition-all"
                       >
-                        <Check size={18} /> Провести инкассацию
+                        Инкассировать
                       </button>
                     </div>
                   )}

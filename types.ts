@@ -1,17 +1,17 @@
 
 export enum Tab {
-  REVENUE = 'revenue',
-  TIMESHEETS = 'timesheets',
+  POINTS = 'points', // Отчеты по точкам
+  SCHEDULES = 'schedules', // Графики работы
   ENCASHMENT = 'encashment',
+  TIMESHEETS = 'timesheets',
   SALARY = 'salary',
-  SETTINGS = 'settings',
-  AI_EDITOR = 'ai_editor'
+  SETTINGS = 'settings'
 }
 
 export enum UserRole {
-  ADMIN = 'admin',       // Полные права (вкл. управление пользователями)
-  MANAGER = 'manager',   // Управление точками, кассами и персоналом по всей сети
-  SUPERVISOR = 'supervisor' // Ввод данных и управление кассами на своих точках
+  ADMIN = 'admin',       // Полные права
+  MANAGER = 'manager',   // Только чтение всего
+  SUPERVISOR = 'supervisor' // Ввод данных по своим точкам
 }
 
 export interface User {
@@ -26,7 +26,15 @@ export interface User {
 export interface RentalPoint {
   id: string;
   name: string;
-  serviceSalePercent?: number; // Процент на продажу услуг
+  salaryPercent?: number; // Процент, учитываемый при расчете ЗП
+}
+
+export interface PointSchedule {
+  id: string;
+  pointId: string;
+  date: string; // YYYY-MM-DD
+  openTime: string;
+  closeTime: string;
 }
 
 export interface CashRegister {
@@ -41,6 +49,15 @@ export interface Employee {
   position: string;
   pointId: string;
   hourlyRate: number;
+}
+
+export interface EmployeeSchedule {
+  id: string;
+  employeeId: string;
+  pointId: string;
+  date: string; // YYYY-MM-DD
+  startTime: string;
+  endTime: string;
 }
 
 export interface RevenueEntry {
@@ -60,6 +77,8 @@ export interface TimesheetEntry {
   employeeId: string;
   date: string;
   hours: number;
+  startTime?: string;
+  endTime?: string;
 }
 
 export interface EncashmentEntry {
@@ -70,20 +89,60 @@ export interface EncashmentEntry {
   amount: number;
 }
 
-export interface SalaryAdjustment {
-  employeeId: string;
-  year: number;
-  month: number;
-  bonus: number;
-  fine: number;
-}
-
 export interface SalaryCalculation {
   employeeId: string;
   employeeName: string;
   totalHours: number;
   baseSalary: number;
-  bonus: number;
-  fine: number;
+  pointPercentBonus: number;
   total: number;
+}
+
+export interface MorningReport {
+  id: string;
+  pointId: string;
+  date: string;
+  openTime: string;
+  employeeIds: string[];
+  media: string[]; // Base64 strings or URLs
+  cashVerified: boolean;
+}
+
+export interface EveningReport {
+  id: string;
+  pointId: string;
+  date: string;
+  closeTime: string;
+  cashVerified: boolean;
+  // Данные о выручке и часах хранятся в RevenueEntry и TimesheetEntry,
+  // но отчет связывает факт сдачи.
+}
+
+// --- Audit Types ---
+
+export type AuditType = 'morning' | 'evening';
+
+export type AuditRequirement = 'photo' | 'comment';
+
+export interface AuditQuestion {
+  id: string;
+  text: string;
+  // Logic: If user selects this answer, enforce requirement
+  requireOnAnswer: 'yes' | 'no' | 'always' | null; 
+  requirementType: AuditRequirement[]; // Array of requirements
+}
+
+export interface AuditAnswer {
+  questionId: string;
+  value: boolean; // true = Yes, false = No
+  comment?: string;
+  photo?: string;
+}
+
+export interface AuditReport {
+  id: string;
+  pointId: string;
+  date: string;
+  type: AuditType;
+  answers: AuditAnswer[];
 }

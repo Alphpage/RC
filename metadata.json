@@ -1,5 +1,5 @@
 {
-  "name": "Copy of RentControl Pro",
+  "name": "RentControl Pro (После совещания)",
   "description": "Система управления крупной сетью прокатов: выручка, табеля, инкассация и расчет зарплаты с поддержкой ИИ для редактирования фото объектов.",
   "requestFramePermissions": [
     "camera"
